@@ -1,0 +1,22 @@
+{
+  "id": "google-ads-agency",
+  "name": "Google Ads Agency Toolkit",
+  "version": "1.0.0",
+  "entrypoint": "dist/index.js",
+  "runtime": "node",
+  "capabilities": {
+    "tools": true
+  },
+  "configuration": {
+    "env": [
+      "GOOGLE_ADS_DEVELOPER_TOKEN",
+      "GOOGLE_ADS_CLIENT_ID",
+      "GOOGLE_ADS_CLIENT_SECRET",
+      "GOOGLE_ADS_REFRESH_TOKEN",
+      "GOOGLE_ADS_LOGIN_CUSTOMER_ID",
+      "GOOGLE_ADS_MANAGER_CUSTOMER_ID",
+      "OPENCLAW_GOOGLE_ADS_MODE",
+      "OPENCLAW_GOOGLE_ADS_ENABLE_ACTIONS"
+    ]
+  }
+}
