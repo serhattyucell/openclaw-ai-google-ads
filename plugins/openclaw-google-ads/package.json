@@ -1,5 +1,5 @@
 {
-  "name": "@openclaw/plugin-google-ads",
+  "name": "openclaw-google-ads",
   "version": "1.0.0",
   "description": "Production-grade OpenClaw plugin for Google Ads agency workflows.",
   "type": "module",
