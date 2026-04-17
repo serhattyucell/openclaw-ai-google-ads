@@ -1,6 +1,7 @@
 # OpenClaw Google Ads Agency Plugin
 
 Google Ads ajans operasyonlari icin OpenClaw agent'ina tool capability ekleyen production-grade TypeScript plugin.
+Plugin kimligi yalnizca `openclaw-google-ads` olarak desteklenir.
 
 ## Ozellikler
 
@@ -64,6 +65,8 @@ npm run dev
 3. Plugin secildiginde `entrypoint=dist/index.js` yuklenir.
 4. OpenClaw agent tool selection asamasinda bu plugin tool'lari secilebilir olur.
 
+Manifest id: `openclaw-google-ads` (eski id `google-ads-agency` desteklenmez).
+
 ## Mode ve Guvenlik
 
 - `OPENCLAW_GOOGLE_ADS_MODE=read-only`: Action tool'lar engelli.
@@ -78,6 +81,25 @@ Action tool'lari bu iki kosul saglanmadan calismaz.
 - "Odeme problemi olan musterileri listele" -> `get_billing_status`
 - "Reddedilen reklamlari goster" -> `list_disapproved_ads`
 - "Su kampanyayi kapat" -> `pause_campaign` (action mode gerekli)
+
+## Export ve Test
+
+- Runtime model: default export `register()` fonksiyonudur.
+- Named export'lar: `register`, `createGoogleAdsPlugin`, `TOOL_NAMES`, `PLUGIN_ID`, `PluginError`
+
+Ornek:
+
+```ts
+import plugin from "./dist/index.js";
+const instance = plugin();
+const accounts = await instance.invokeTool("list_google_ads_accounts", {});
+```
+
+Smoke test:
+
+```bash
+npm run smoke:test
+```
 
 ## Production Notlari
 

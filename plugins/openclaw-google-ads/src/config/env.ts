@@ -18,11 +18,14 @@ const envSchema = z.object({
   GOOGLE_ADS_REFRESH_TOKEN: z.string().min(1, "GOOGLE_ADS_REFRESH_TOKEN zorunludur"),
   GOOGLE_ADS_LOGIN_CUSTOMER_ID: customerIdSchema,
   GOOGLE_ADS_MANAGER_CUSTOMER_ID: customerIdSchema,
-  OPENCLAW_GOOGLE_ADS_MODE: z.enum(["read-only", "action"]).optional(),
+  OPENCLAW_GOOGLE_ADS_MODE: z.enum(["read-only", "action"], {
+    errorMap: () => ({ message: "OPENCLAW_GOOGLE_ADS_MODE sadece 'read-only' veya 'action' olabilir" })
+  }),
   OPENCLAW_GOOGLE_ADS_ENABLE_ACTIONS: z
     .string()
-    .optional()
-    .transform((v) => (v ? v.toLowerCase() === "true" : undefined))
+    .transform((v) => v.toLowerCase())
+    .refine((v) => v === "true" || v === "false", "OPENCLAW_GOOGLE_ADS_ENABLE_ACTIONS true/false olmalidir")
+    .transform((v) => v === "true")
 });
 
 export type EnvConfig = {
@@ -39,12 +42,13 @@ export type EnvConfig = {
 export const loadEnvConfig = (options?: PluginOptions): EnvConfig => {
   const parsedResult = envSchema.safeParse(process.env);
   if (!parsedResult.success) {
-    const messages = parsedResult.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(" | ");
+    const messages = parsedResult.error.issues.map((i) => `- ${i.path.join(".")}: ${i.message}`).join("\n");
     throw new PluginError(
-      `Google Ads plugin env dogrulamasi basarisiz. Lutfen 'npm run setup' ile zorunlu alanlari doldurun. Detay: ${messages}`,
+      `Google Ads plugin env dogrulamasi basarisiz.\n${messages}\nCozum: plugin klasorunde 'npm run setup' calistirin ve tekrar deneyin.`,
       "INVALID_ENV_CONFIG",
       400,
-      parsedResult.error.flatten()
+      parsedResult.error.flatten(),
+      "env"
     );
   }
   const parsed = parsedResult.data;

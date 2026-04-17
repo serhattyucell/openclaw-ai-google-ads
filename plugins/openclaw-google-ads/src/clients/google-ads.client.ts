@@ -3,6 +3,17 @@ import { type EnvConfig } from "../config/env.js";
 import { GoogleAdsApiError } from "../errors/google-ads-api-error.js";
 
 export class GoogleAdsClient {
+  private classifyAndThrow(message: string, error: unknown): never {
+    const raw = String(error ?? "");
+    const lower = raw.toLowerCase();
+    const isAuth =
+      lower.includes("unauthenticated") ||
+      lower.includes("oauth") ||
+      lower.includes("invalid_grant") ||
+      lower.includes("authentication_error");
+    throw new GoogleAdsApiError(message, error, isAuth ? "auth" : "api");
+  }
+
   private readonly api: GoogleAdsApi;
 
   constructor(private readonly env: EnvConfig) {
@@ -27,7 +38,7 @@ export class GoogleAdsClient {
       const rows = await c.query(gaql);
       return rows as T[];
     } catch (error) {
-      throw new GoogleAdsApiError(`GAQL query failed for customer ${customerId}`, error);
+      this.classifyAndThrow(`GAQL query failed for customer ${customerId}`, error);
     }
   }
 
@@ -36,7 +47,7 @@ export class GoogleAdsClient {
       const c = this.customer(customerId);
       await c.campaigns.update([{ resource_name: `customers/${customerId}/campaigns/${campaignId}`, status }]);
     } catch (error) {
-      throw new GoogleAdsApiError(`Failed to set campaign status to ${status}`, error);
+      this.classifyAndThrow(`Failed to set campaign status to ${status}`, error);
     }
   }
 
@@ -56,7 +67,7 @@ export class GoogleAdsClient {
       if (error instanceof GoogleAdsApiError) {
         throw error;
       }
-      throw new GoogleAdsApiError(`Failed to update campaign budget`, error);
+      this.classifyAndThrow(`Failed to update campaign budget`, error);
     }
   }
 }

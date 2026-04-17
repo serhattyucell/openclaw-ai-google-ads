@@ -3,11 +3,11 @@ import { GoogleAdsClient } from "../clients/google-ads.client.js";
 
 type AccountRow = {
   customer_client: {
-    id: string;
-    descriptive_name: string;
-    currency_code?: string;
-    time_zone?: string;
-    status?: string;
+    id: string | number;
+    descriptive_name?: string;
+    currency_code?: string | number;
+    time_zone?: string | number;
+    status?: string | number;
     manager?: boolean;
   };
 };
@@ -27,11 +27,11 @@ export class AccountsService {
     return rows
       .filter((r) => !r.customer_client.manager)
       .map((r) => ({
-        customerId: r.customer_client.id,
-        descriptiveName: r.customer_client.descriptive_name,
-        currencyCode: r.customer_client.currency_code,
-        timeZone: r.customer_client.time_zone,
-        status: r.customer_client.status
+        customerId: String(r.customer_client.id),
+        descriptiveName: r.customer_client.descriptive_name ?? "",
+        currencyCode: r.customer_client.currency_code ? String(r.customer_client.currency_code) : undefined,
+        timeZone: r.customer_client.time_zone ? String(r.customer_client.time_zone) : undefined,
+        status: r.customer_client.status ? String(r.customer_client.status) : undefined
       }));
   }
 }

@@ -3,6 +3,10 @@ import { stdin as input, stdout as output } from "node:process";
 import { existsSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { loadEnvConfig } from "../src/config/env.js";
+import { createGoogleAdsPlugin } from "../src/index.js";
+import { PluginError } from "../src/errors/plugin-error.js";
+import { TOOL_NAMES } from "../src/constants/tool-names.js";
 
 type EnvField = {
   key: string;
@@ -114,6 +118,33 @@ const run = async () => {
     const orderedOutput = fields.map((f) => `${f.key}=${result[f.key] ?? ""}`).join("\n");
     await writeFile(envPath, `${orderedOutput}\n`, "utf-8");
     console.log(`\nKurulum tamamlandi: ${envPath}`);
+    console.log("Plugin register dogrulamasi baslatiliyor...");
+
+    const previousEnv = { ...process.env };
+    Object.assign(process.env, result);
+    try {
+      loadEnvConfig();
+      const plugin = createGoogleAdsPlugin();
+      console.log(`- Register OK. Tool sayisi: ${plugin.tools.length}`);
+      try {
+        await plugin.invokeTool(TOOL_NAMES.LIST_ACCOUNTS, {});
+        console.log("- Smoke test OK: list_google_ads_accounts cagrildi.");
+      } catch (error) {
+        if (error instanceof PluginError) {
+          console.log(`- Smoke test fail (${error.code}): ${error.message}`);
+        } else {
+          console.log(`- Smoke test fail: ${String(error)}`);
+        }
+        console.log("  Not: Bu adim network/auth durumuna bagli olarak fail olabilir.");
+      }
+    } finally {
+      for (const key of Object.keys(process.env)) {
+        if (!(key in previousEnv)) {
+          delete process.env[key];
+        }
+      }
+      Object.assign(process.env, previousEnv);
+    }
   } finally {
     rl.close();
   }
